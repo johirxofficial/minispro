@@ -13,7 +13,9 @@ database, sessions, cache, domain and service.
 | Customer portal | http://portal.ispbilling.lvh.me:8001 |
 | Project folder | `/home/desktop/spacex/isp-billing` |
 | Database | `isp_billing` (MySQL) |
-| Service | `isp-billing.service` (systemd user service) |
+| Web service | `isp-billing.service` |
+| Queue worker | `isp-billing-queue.service` |
+| Scheduler | `isp-billing-scheduler.service` |
 | Server port | `8001` |
 
 Admin login: `rohan9222@gmail.com` / `rohan9222@gmail.com`
@@ -23,7 +25,9 @@ Admin login: `rohan9222@gmail.com` / `rohan9222@gmail.com`
 ```bash
 cd /home/desktop/spacex/isp-billing
 
-systemctl --user status isp-billing      # check
+systemctl --user status isp-billing      # web
+systemctl --user status isp-billing-queue
+systemctl --user status isp-billing-scheduler
 systemctl --user restart isp-billing     # restart after code changes
 systemctl --user stop isp-billing        # stop
 

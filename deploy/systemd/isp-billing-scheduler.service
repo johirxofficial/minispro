@@ -1,0 +1,13 @@
+[Unit]
+Description=ISP Billing scheduler
+After=network.target mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/desktop/spacex/isp-billing
+ExecStart=/usr/bin/php artisan schedule:work
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

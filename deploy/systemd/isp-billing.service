@@ -1,0 +1,14 @@
+[Unit]
+Description=ISP Billing (Laravel) - http://ispbilling.lvh.me:8001
+After=network.target mysql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/home/desktop/spacex/isp-billing
+ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8001
+Restart=always
+RestartSec=3
+Environment=PHP_CLI_SERVER_WORKERS=4
+
+[Install]
+WantedBy=default.target
