@@ -426,15 +426,39 @@ class MikrotikSync extends Component
 
     public function delete($id)
     {
-        $router = RouterList::find($id);  // Check if router exists
+        $router = RouterList::find($id);
+
+        if (! $router) {
+            flash()->error('Router not found!');
+
+            return;
+        }
+
+        $routerName = $router->router_name;
+
         try {
-            if ($router) {
+            DB::transaction(function () use ($router, $routerName) {
+                // Synced PPP secrets have a restrictive foreign key and must be
+                // removed before the router row itself.
+                PPPSecrets::where('router_name', $routerName)->delete();
+
+                // Router-scoped runtime data that is meaningless without the router.
+                \App\Models\HotspotVoucher::where('router_name', $routerName)->delete();
+                \App\Models\HotspotSale::where('router_name', $routerName)->delete();
+                \App\Models\MikrotikLog::where('router_name', $routerName)->delete();
+                \App\Models\PermittedUrl::where('router_id', $router->id)->delete();
+
+                // Keep packages working as global packages instead of orphaning them.
+                \App\Models\PackageList::where('router_name', $routerName)
+                    ->update(['router_name' => null]);
+
                 $router->delete();
-                flash()->success('Router deleted successfully!');
-            } else {
-                flash()->error('Router not found!');
-            }
-        } catch (\Exception $e) {
+            });
+
+            app(MikrotikController::class)->invalidateRouterCache($routerName);
+            flash()->success('Router deleted successfully!');
+        } catch (\Throwable $e) {
+            report($e);
             flash()->error('Error deleting router: '.$e->getMessage());
         }
     }

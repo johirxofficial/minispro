@@ -117,7 +117,9 @@
 
                                     <!-- Action Buttons -->
                                     <div class="d-flex gap-1">
-                                        <button class="btn btn-sm btn-outline-danger p-1" title="{{ __('Delete') }}" wire:click="delete({{ $router->id }})">
+                                        <button class="btn btn-sm btn-outline-danger p-1" title="{{ __('Delete') }}"
+                                            wire:click="delete({{ $router->id }})"
+                                            wire:confirm="{{ __('Delete this router? Its synced PPP secrets, vouchers, hotspot sales and logs will also be deleted. Packages will be kept as global packages.') }}">
                                             <i class="bi bi-trash" style="font-size: 0.85rem;"></i>
                                         </button>
                                         <button class="btn btn-sm btn-outline-info p-1" title="{{ __('Edit') }}" wire:click="edit({{ $router->id }})" @click="isOpen = true">
