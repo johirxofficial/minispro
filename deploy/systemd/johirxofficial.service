@@ -1,10 +1,10 @@
 [Unit]
-Description=ISP Billing (Laravel) - http://ispbilling.lvh.me:8001
+Description=johirxofficial (Laravel) - http://127.0.0.1:8001
 After=network.target mysql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/desktop/spacex/isp-billing
+WorkingDirectory=/home/desktop/spacex/johirxofficial
 ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8001
 Restart=always
 RestartSec=3

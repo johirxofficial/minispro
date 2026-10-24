@@ -55,7 +55,7 @@ class MainSiteSetup extends Component implements HasActions, HasForms
         $settings = [
             // Identity & Status
             'site_name' => MainSiteData::getValue('site_name', config('app.name')),
-            'portal_name' => MainSiteData::getValue('portal_name', 'ISP Billing Ltd'),
+            'portal_name' => MainSiteData::getValue('portal_name', 'johirxofficial Ltd'),
             'site_title' => MainSiteData::getValue('site_title'),
             'site_status' => MainSiteData::getValue('site_status', 'active'),
             'site_maintenance' => MainSiteData::getValue('site_maintenance', 0) ? 1 : 0,

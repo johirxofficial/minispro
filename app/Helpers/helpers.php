@@ -4,8 +4,7 @@ use App\Http\Controllers\AvatarController;
 use App\Models\MainSiteData;
 
 /**
- * Created by Md. Jahangir Alam Rohan.
- * User: Md. Jahangir Alam Rohan.
+ * Modified by johirxofficial.
  * Date: 25-Jun-2024
  * Time: 03.01 PM
  */

@@ -1,10 +1,10 @@
 [Unit]
-Description=ISP Billing queue worker
+Description=johirxofficial queue worker
 After=network.target mysql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/desktop/spacex/isp-billing
+WorkingDirectory=/home/desktop/spacex/johirxofficial
 ExecStart=/usr/bin/php artisan queue:work --sleep=3 --tries=3 --max-time=3600
 Restart=always
 RestartSec=5

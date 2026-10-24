@@ -442,7 +442,7 @@
                             <select class="form-select form-select-sm" wire:model.defer="v_profile" id="v_profile">
                                 <option value="">{{ __('-- Select Profile --') }}</option>
                                 @foreach($userProfiles as $p)
-                                    <option value="{{ $p['name'] }}">{{ $p['name'] }}</option>
+                                    <option value="{{ $p['name'] ?? '' }}">{{ $p['name'] ?? '' }}</option>
                                 @endforeach
                             </select>
                             @error('v_profile')<div class="text-danger small">{{ $message }}</div>@enderror
@@ -797,7 +797,7 @@
                                 <select class="form-select form-select-sm" wire:model.live="up_address_pool">
                                     <option value="none">{{ __('None') }}</option>
                                     @foreach($ipPools as $pool)
-                                        <option value="{{ $pool['name'] }}">{{ $pool['name'] }}</option>
+                                        <option value="{{ $pool['name'] ?? '' }}">{{ $pool['name'] ?? '' }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -937,7 +937,7 @@
                             <select class="form-select form-select-sm" wire:model.defer="s_profile">
                                 <option value="">{{ __('-- Profile --') }}</option>
                                 @foreach($userProfiles as $p)
-                                    <option value="{{ $p['name'] }}">{{ $p['name'] }}</option>
+                                    <option value="{{ $p['name'] ?? '' }}">{{ $p['name'] ?? '' }}</option>
                                 @endforeach
                             </select>
                             @error('s_profile')<div class="text-danger small">{{ $message }}</div>@enderror
@@ -1326,7 +1326,7 @@
                                 <select class="form-select form-select-sm @error('u_profile') is-invalid @enderror"
                                         wire:model="u_profile" id="u_profile">
                                     @forelse($userProfiles as $p)
-                                        <option value="{{ $p['name'] }}">{{ $p['name'] }}</option>
+                                        <option value="{{ $p['name'] ?? '' }}">{{ $p['name'] ?? '' }}</option>
                                     @empty
                                         <option value="default">default</option>
                                     @endforelse

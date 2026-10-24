@@ -1,10 +1,10 @@
 [Unit]
-Description=ISP Billing scheduler
+Description=johirxofficial scheduler
 After=network.target mysql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/desktop/spacex/isp-billing
+WorkingDirectory=/home/desktop/spacex/johirxofficial
 ExecStart=/usr/bin/php artisan schedule:work
 Restart=always
 RestartSec=5

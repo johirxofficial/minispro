@@ -265,12 +265,27 @@ class MikrotikController extends Controller
                         $isPrint ? $apiParams : []
                     );
 
-                    if (is_array($res) && ! isset($res['!trap'])) {
+                    // RouterOS may answer a read with an error envelope instead of a
+                    // list (e.g. "no such command prefix" when the hotspot package
+                    // is not installed). Never return that as data — it would be
+                    // iterated as a device record and crash the views.
+                    $apiError = null;
+                    if (is_string($res)) {
+                        $apiError = str_starts_with($res, 'Error:') ? $res : null;
+                    } elseif (is_array($res)) {
+                        if (isset($res['!trap'])) {
+                            $apiError = $res['!trap'][0]['message'] ?? 'Unknown Error';
+                        } elseif (isset($res['after']['message'])) {
+                            $apiError = $res['after']['message'];
+                        }
+                    }
+
+                    if ($apiError === null && is_array($res)) {
                         return $res;
                     }
 
-                    if (isset($res['!trap'])) {
-                        \Log::debug("Mikrotik [{$routerName}] API Read Trap: ".($res['!trap'][0]['message'] ?? 'Unknown Error'));
+                    if ($apiError !== null) {
+                        \Log::debug("Mikrotik [{$routerName}] API Read Error: ".$apiError);
                     }
                 } catch (\Exception $e) {
                     \Log::debug("Mikrotik [{$routerName}] API Read Fail (falling back to SSH): ".$e->getMessage());

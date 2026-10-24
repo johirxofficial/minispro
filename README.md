@@ -1,4 +1,4 @@
-# ISP Billing — MikroTik RouterOS API & ISP Billing Management System
+# johirxofficial — MikroTik RouterOS API & johirxofficial Management System
 
 <div align="center">
 
@@ -75,7 +75,7 @@ graph TD
 
 1. **Project Location**
    ```bash
-   cd /home/desktop/spacex/isp-billing
+   cd /home/desktop/spacex/johirxofficial
    ```
    This is our own independent repository (no upstream remote).
 
