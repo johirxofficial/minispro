@@ -20,6 +20,11 @@ database, sessions, cache, domain and service.
 
 Admin login: `rohan9222@gmail.com` / `rohan9222@gmail.com`
 
+> `lvh.me` is a public wildcard DNS name that always resolves to **127.0.0.1**.
+> The whole app runs on this computer; no data goes to the internet.
+> Opening `http://127.0.0.1:8001` redirects to the app domain on purpose, because
+> the app uses separate `billing.` and `portal.` subdomains.
+
 ## Everyday commands
 
 ```bash

@@ -62,7 +62,19 @@ $baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?: config('app.url');
 
 // Catch-all redirect for external domains or direct IP requests (NAT Redirection for Expired Users)
 $currentHost = request()->getHost();
-if ($currentHost && !in_array($currentHost, [$baseDomain, 'portal.'.$baseDomain, 'billing.'.$baseDomain])) {
+$knownHosts = [$baseDomain, 'portal.'.$baseDomain, 'billing.'.$baseDomain];
+
+// Local computer access (127.0.0.1 / localhost) must open OUR project, not the
+// expired-client warning page. The app itself is subdomain based, so send the
+// browser to the local app domain (lvh.me resolves to 127.0.0.1 on this machine).
+$isLocalIpAccess = in_array($currentHost, ['127.0.0.1', 'localhost', '::1'], true)
+    && ! in_array($currentHost, $knownHosts, true);
+
+if ($isLocalIpAccess) {
+    Route::any('{any}', function () {
+        return redirect()->away(rtrim(config('app.url'), '/'));
+    })->where('any', '.*');
+} elseif ($currentHost && ! in_array($currentHost, $knownHosts)) {
     Route::any('{any}', function () {
         return redirect()->away(config('app.url') . '/warning');
     })->where('any', '.*');
