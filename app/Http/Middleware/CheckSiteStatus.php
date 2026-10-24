@@ -27,29 +27,26 @@ class CheckSiteStatus
         }
 
         if ($maintenance || $disabled) {
-            $host = $request->getHost();
-            $baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?: config('app.url');
+            // Never block the admin panel — admins must be able to re-enable the site.
+            $isAdminArea = ! $request->is('/', 'all-packages', 'lang/*', 'warning', 'recharge/*', 'privacy-policy', 'terms-of-service')
+                && ! $request->is('portal', 'portal/*');
 
-            // Exclude admin panel subdomain (billing.*) so admins can access it to enable the site again
-            if (str_starts_with($host, 'billing.')) {
+            if ($isAdminArea) {
                 return $next($request);
             }
 
-            // Exclude local or vendor paths that might be essential, but block the general page view
-            if ($host === $baseDomain || str_starts_with($host, 'portal.')) {
-                $title = $maintenance ? 'Under Maintenance' : 'Site Temporarily Offline';
-                $heading = $maintenance ? 'We\'ll Be Back Soon' : 'Closed Temporarily';
-                $message = MainSiteData::getValue('site_message') ?: ($maintenance
-                    ? 'We are currently performing scheduled maintenance. Please check back shortly.'
-                    : 'This portal and website are temporarily offline. Please check back later.');
+            $title = $maintenance ? 'Under Maintenance' : 'Site Temporarily Offline';
+            $heading = $maintenance ? 'We\'ll Be Back Soon' : 'Closed Temporarily';
+            $message = MainSiteData::getValue('site_message') ?: ($maintenance
+                ? 'We are currently performing scheduled maintenance. Please check back shortly.'
+                : 'This portal and website are temporarily offline. Please check back later.');
 
-                return response()->view('errors.site-closed', [
-                    'title' => $title,
-                    'heading' => $heading,
-                    'message' => $message,
-                    'is_maintenance' => $maintenance,
-                ], 503);
-            }
+            return response()->view('errors.site-closed', [
+                'title' => $title,
+                'heading' => $heading,
+                'message' => $message,
+                'is_maintenance' => $maintenance,
+            ], 503);
         }
 
         return $next($request);

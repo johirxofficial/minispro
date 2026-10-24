@@ -18,10 +18,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        if (isset($_SERVER['HTTP_HOST']) && str_contains($_SERVER['HTTP_HOST'], 'portal.')) {
-            config(['session.cookie' => 'portal_session']);
-        }
-
         // Dynamically register Telescope only if the package is installed
         if (class_exists(\Laravel\Telescope\TelescopeApplicationServiceProvider::class) && class_exists(\App\Providers\TelescopeServiceProvider::class)) {
             $this->app->register(\App\Providers\TelescopeServiceProvider::class);
@@ -45,11 +41,13 @@ class AppServiceProvider extends ServiceProvider
                 if (app()->runningInConsole()) {
                     $locale = \App\Models\MainSiteData::getValue('site_locale', 'en');
                 } else {
-                    $host = request()->getHost();
-                    if ($host && (str_starts_with($host, 'billing.') || str_starts_with($host, 'portal.'))) {
-                        $locale = \App\Models\MainSiteData::getValue('site_locale', 'en');
-                    } else {
+                    $isMainSite = request()->is('/', 'all-packages', 'lang/*', 'warning', 'recharge/*', 'privacy-policy', 'terms-of-service');
+
+                    if ($isMainSite) {
                         $locale = \App\Models\MainSiteData::getValue('main_site_locale', 'en');
+                    } else {
+                        // Admin panel, portal and auth screens use the system language
+                        $locale = \App\Models\MainSiteData::getValue('site_locale', 'en');
                     }
                 }
                 \Illuminate\Support\Facades\App::setLocale($locale);

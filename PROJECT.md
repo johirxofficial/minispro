@@ -8,9 +8,10 @@ database, sessions, cache, domain and service.
 
 | Item | Value |
 |---|---|
-| Main site | http://ispbilling.lvh.me:8001 |
-| Admin / Billing panel | http://billing.ispbilling.lvh.me:8001 |
-| Customer portal | http://portal.ispbilling.lvh.me:8001 |
+| Main site | **http://127.0.0.1:8001** |
+| Admin login | **http://127.0.0.1:8001/login** |
+| Admin panel | **http://127.0.0.1:8001/dashboard** |
+| Customer portal | **http://127.0.0.1:8001/portal** |
 | Project folder | `/home/desktop/spacex/isp-billing` |
 | Database | `isp_billing` (MySQL) |
 | Web service | `isp-billing.service` |
@@ -20,10 +21,12 @@ database, sessions, cache, domain and service.
 
 Admin login: `rohan9222@gmail.com` / `rohan9222@gmail.com`
 
-> `lvh.me` is a public wildcard DNS name that always resolves to **127.0.0.1**.
-> The whole app runs on this computer; no data goes to the internet.
-> Opening `http://127.0.0.1:8001` redirects to the app domain on purpose, because
-> the app uses separate `billing.` and `portal.` subdomains.
+> This project uses a **single-host layout** — no third-party domain or
+> subdomain is needed. Everything runs on `127.0.0.1:8001`:
+> `/` = website, `/login` + `/dashboard` = admin, `/portal` = customer portal.
+>
+> When you get your own domain, just change `APP_URL` in `.env` (and optionally
+> `SESSION_DOMAIN`) and restart. No route changes are required.
 
 ## Everyday commands
 

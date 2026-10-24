@@ -57,77 +57,48 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 
-// Extract domain host from APP_URL for consistent subdomain routing
-$baseDomain = parse_url(config('app.url'), PHP_URL_HOST) ?: config('app.url');
+// ─────────────────────────────────────────────────────────────────────────────
+// Single-host layout (our own project, no third-party/subdomains needed):
+//   /            → public website
+//   /login       → admin login
+//   /dashboard   → admin / billing panel
+//   /portal      → customer portal
+// Set APP_URL in .env to your own domain (or http://127.0.0.1:8001 locally).
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Catch-all redirect for external domains or direct IP requests (NAT Redirection for Expired Users)
-$currentHost = request()->getHost();
-$knownHosts = [$baseDomain, 'portal.'.$baseDomain, 'billing.'.$baseDomain];
+// Public website
+Route::get('/', [MainSiteController::class, 'index'])->name('welcome');
+Route::get('/all-packages', [MainSiteController::class, 'allPackages'])->name('all-packages');
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'bn'])) {
+        session()->put('main_site_locale', $locale);
+    }
 
-// Local computer access (127.0.0.1 / localhost) must open OUR project, not the
-// expired-client warning page. The app itself is subdomain based, so send the
-// browser to the local app domain (lvh.me resolves to 127.0.0.1 on this machine).
-$isLocalIpAccess = in_array($currentHost, ['127.0.0.1', 'localhost', '::1'], true)
-    && ! in_array($currentHost, $knownHosts, true);
+    return redirect()->back();
+})->name('welcome.lang');
 
-if ($isLocalIpAccess) {
-    Route::any('{any}', function () {
-        return redirect()->away(rtrim(config('app.url'), '/'));
-    })->where('any', '.*');
-} elseif ($currentHost && ! in_array($currentHost, $knownHosts)) {
-    Route::any('{any}', function () {
-        return redirect()->away(config('app.url') . '/warning');
-    })->where('any', '.*');
-}
+// Warning / Recharge page for expired users
+Route::get('/warning', function () {
+    return view('warning');
+})->name('warning');
 
-// Main domain
-Route::domain($baseDomain)->group(function () {
-    Route::get('/', [MainSiteController::class, 'index'])->name('welcome');
-    Route::get('/all-packages', [MainSiteController::class, 'allPackages'])->name('all-packages');
-    Route::get('/lang/{locale}', function ($locale) {
-        if (in_array($locale, ['en', 'bn'])) {
-            session()->put('main_site_locale', $locale);
-        }
-        return redirect()->back();
-    })->name('welcome.lang');
+// Public voucher redemption route on the main site
+Route::get('/recharge/voucher', [PortalVoucherController::class, 'showRechargeForm'])->name('welcome.voucher.recharge');
+Route::post('/recharge/voucher', [PortalVoucherController::class, 'redeem'])->name('welcome.voucher.redeem');
 
-    // Warning / Recharge page for expired users
-    Route::get('/warning', function () {
-        return view('warning');
-    })->name('warning');
+// Friendly shortcuts into our own panels
+Route::get('/billing', fn () => redirect('/dashboard'))->name('billing');
 
-    // Public voucher redemption route on main domain
-    Route::get('/recharge/voucher', [PortalVoucherController::class, 'showRechargeForm'])->name('welcome.voucher.recharge');
-    Route::post('/recharge/voucher', [PortalVoucherController::class, 'redeem'])->name('welcome.voucher.redeem');
-
-    Route::get('/portal', function () {
-        $host = request()->getHost();
-        if (Str::startsWith($host, 'portal.')) {
-            return redirect('/');
-        }
-
-        return redirect()->away('https://portal.'.$host);
-    });
-
-    Route::get('/billing', function () {
-        $host = request()->getHost();
-        if (Str::startsWith($host, 'billing.')) {
-            return redirect('/');
-        }
-
-        return redirect()->away('https://billing.'.$host);
-    });
-});
 
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
     'verified',
     'restrict.profile',
-])->group(function () use ($baseDomain) {
+])->group(function () {
 
-    // billing domain
-    Route::domain('billing.'.$baseDomain)->group(function () {
+    // Admin / billing panel (single host, path based)
+    Route::group([], function () {
         Route::get('/system/db-backup/download/{filename}', function ($filename) {
             if (str_contains($filename, '/') || str_contains($filename, '\\')) {
                 abort(403, 'Invalid filename.');
@@ -138,8 +109,6 @@ Route::middleware([
             }
             abort(404, 'Backup file not found.');
         })->name('system.db-backup.download');
-
-        Route::redirect('/', '/dashboard');
 
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
         Route::resources([
@@ -265,8 +234,8 @@ Route::middleware([
 });
 
 
-// portal domain routes
-Route::domain('portal.'.$baseDomain)->group(function () {
+// Customer portal routes (single host, /portal prefix)
+Route::prefix('portal')->group(function () {
     // Authenticated portal payment initiation routes
     Route::middleware(['auth:ppp'])->group(function () {
         Route::get('/payment/bkash/initiate', [BkashPaymentController::class, 'initiate'])->name('payment.bkash.initiate');

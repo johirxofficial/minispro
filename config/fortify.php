@@ -87,7 +87,7 @@ return [
     */
 
     'prefix' => '',
-    'domain' => 'billing.' . (parse_url(env('APP_URL', 'http://mikrotik-api.test'), PHP_URL_HOST) ?: 'mikrotik-api.test'),
+    'domain' => null,
 
     /*
     |--------------------------------------------------------------------------

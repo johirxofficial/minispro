@@ -21,17 +21,18 @@ class SetLocaleFromSession
     {
         try {
             if (class_exists(MainSiteData::class) && \Illuminate\Support\Facades\Schema::hasTable('main_site_data')) {
-                $host = $request->getHost();
-                if ($host && (str_starts_with($host, 'billing.') || str_starts_with($host, 'portal.'))) {
-                    // System Language for administrative subdomains
-                    $locale = MainSiteData::getValue('site_locale', 'en');
-                } else {
+                $isMainSite = $request->is('/', 'all-packages', 'lang/*', 'warning', 'recharge/*', 'privacy-policy', 'terms-of-service');
+
+                if ($isMainSite) {
                     // Main Site Language: Check session override first, then fall back to DB setting
                     if (session()->has('main_site_locale')) {
                         $locale = session()->get('main_site_locale');
                     } else {
                         $locale = MainSiteData::getValue('main_site_locale', 'en');
                     }
+                } else {
+                    // System language for admin, portal and auth screens
+                    $locale = MainSiteData::getValue('site_locale', 'en');
                 }
                 App::setLocale($locale);
             }

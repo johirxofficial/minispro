@@ -73,11 +73,11 @@ graph TD
 
 ### Installation Steps
 
-1. **Clone the Repository**
+1. **Project Location**
    ```bash
-   git clone https://github.com/CodePagol/ISP-Mikrotik-Billing.git
-   cd ISP-Mikrotik-Billing
+   cd /home/desktop/spacex/isp-billing
    ```
+   This is our own independent repository (no upstream remote).
 
 2. **Install Composer Dependencies**
    ```bash
