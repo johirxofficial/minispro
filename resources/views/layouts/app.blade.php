@@ -455,7 +455,7 @@
 
     {{-- Attribution notice — required by LICENSE. Do not remove. See: https://codepagol.com --}}
     <div id="codepagol-attribution" style="display:none" aria-hidden="true"
-         data-credit="Powered by CodePagol | https://codepagol.com"></div>
+         data-credit="Powered by CodePagol | https://codepagol.com | Modified by johirxofficial"></div>
 
 </body>
 </html>

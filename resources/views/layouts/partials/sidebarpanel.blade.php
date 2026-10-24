@@ -539,4 +539,5 @@
        style="color:inherit; text-decoration:none;">
         Powered by CodePagol
     </a>
+    <span> &middot; Modified by <strong>johirxofficial</strong></span>
 </div>

@@ -1,6 +1,8 @@
 # ISP Billing — Own Project Guide
 
 This is an independent copy of the billing platform, rebranded for our own use.
+
+**Modified by johirxofficial.**
 It is **not connected** to the original GitHub repository and has its own
 database, sessions, cache, domain and service.
 

@@ -235,3 +235,9 @@ For full setup support, custom ISP modules integration, payment gateway configur
 - **E-mail:** [rohan9222@gmail.com](mailto:rohan9222@gmail.com)
 
 *Feel free to submit a pull request or open an issue on the repository to contribute to the project.*
+
+---
+
+## Modified by
+
+**johirxofficial**
