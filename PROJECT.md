@@ -80,8 +80,8 @@ mysql -uroot -p isp_billing < backup.sql
 - New session cookie/domain and cache prefix, so logins do not clash.
 - Runs on a different port (`8001`) while the original runs on `8000`.
 
-## License / attribution
+## License
 
-The software is licensed under **AGPL-3.0**. The `Powered by CodePagol`
-attribution in the footer must remain visible. You may rebrand the product
-name, but the attribution and the `/LICENSE` file must be kept.
+Licensed under **AGPL-3.0**. See `/LICENSE`.
+
+**Modified by johirxofficial.**

@@ -26,15 +26,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // ╔══════════════════════════════════════════════════════════════════╗
-        // ║  Attribution Guard — required by the CodePagol Open Source      ║
-        // ║  License (see /LICENSE). The "Powered by CodePagol" notice must ║
-        // ║  remain visible in the application UI. Do not remove.           ║
-        // ╚══════════════════════════════════════════════════════════════════╝
-        if (! app()->runningInConsole() && ! app()->runningUnitTests()) {
-            $this->enforceAttribution();
-        }
-
         // Set dynamic application locale from database settings
         try {
             if (class_exists(\App\Models\MainSiteData::class) && \Illuminate\Support\Facades\Schema::hasTable('main_site_data')) {
@@ -143,46 +134,4 @@ class AppServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Attribution Guard.
-     *
-     * This application is open-source under the CodePagol license.
-     * The license requires that the "Powered by CodePagol" credit remain
-     * visible in the UI. This method verifies that the attribution has not
-     * been removed from the distributed view files.
-     *
-     * See: /LICENSE
-     */
-    private function enforceAttribution(): void
-    {
-        // The attribution string that must exist in the view files.
-        $required = 'codepagol.com';
-
-        // These are the canonical files where attribution must be present.
-        // Adding it in multiple files makes accidental or intentional removal harder.
-        $guardedFiles = [
-            resource_path('views/main-site.blade.php'),
-            resource_path('views/all-packages.blade.php'),
-            resource_path('views/layouts/app.blade.php'),
-            resource_path('views/layouts/partials/sidebarpanel.blade.php'),
-        ];
-
-        foreach ($guardedFiles as $file) {
-            if (! file_exists($file)) {
-                continue;
-            }
-
-            // Search the entire file — safe even if content is added after the attribution line.
-            // These view files are small enough that a full read is not a performance concern.
-            $contents = file_get_contents($file);
-
-            if ($contents === false || stripos($contents, $required) === false) {
-                abort(503,
-                    'Setup incomplete: The "Powered by CodePagol" attribution notice ' .
-                    'is required by the software license but was not found in: ' .
-                    basename($file) . '. Please restore it. See /LICENSE or https://codepagol.com/license'
-                );
-            }
-        }
-    }
 }

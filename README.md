@@ -217,24 +217,12 @@ The core libraries and packages keeping the platform running smoothly:
 
 This project is open-source software licensed under the [AGPL-3.0 license](/LICENSE).
 
+Modified by **johirxofficial**.
+
 See [PROJECT.md](PROJECT.md) for this installation, branding and management commands.
 
 ---
 
-## Developed & Maintained by
-
-**Md Jahangir Alam Rohan**
-- **WhatsApp Support:** [+8801840451881](https://wa.me/8801840451881) (Fastest Response)
-- **E-mail:** [rohan9222@gmail.com](mailto:rohan9222@gmail.com)
-- **GitHub:** [@rohan9222](https://github.com/rohan9222)
-
-## Support & Customization
-
-For full setup support, custom ISP modules integration, payment gateway configuration, or technical queries:
-- **WhatsApp:** [Chat on WhatsApp](https://wa.me/8801840451881)
-- **E-mail:** [rohan9222@gmail.com](mailto:rohan9222@gmail.com)
-
-*Feel free to submit a pull request or open an issue on the repository to contribute to the project.*
 
 ---
 

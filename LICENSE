@@ -220,7 +220,7 @@ If you develop a new program, and you want it to be of the greatest possible use
 To do so, attach the following notices to the program.  It is safest to attach them to the start of each source file to most effectively state the exclusion of warranty; and each file should have at least the "copyright" line and a pointer to where the full notice is found.
 
      Mikrotik API - ISP Billing System integration
-     Copyright (C) 2026 CodePagol
+     Copyright (C) 2026 johirxofficial
 
      This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
@@ -233,49 +233,3 @@ Also add information on how to contact you by electronic and paper mail.
 If your software can interact with users remotely through a computer network, you should also make sure that it provides a way for users to get its source.  For example, if your program is a web application, its interface could display a "Source" link that leads users to an archive of the code.  There are many ways you could offer source, and different solutions will be better for different programs; see section 13 for the specific requirements.
 
 You should also get your employer (if you work as a programmer) or school, if any, to sign a "copyright disclaimer" for the program, if necessary. For more information on this, and how to apply and follow the GNU AGPL, see <http://www.gnu.org/licenses/>.
-
----
-
-জিএনইউ অ্যাফেরো জেনারেল পাবলিক লাইসেন্স (AGPLv3 বাংলা সারসংক্ষেপ)
-
-এই প্রজেক্টটি GNU Affero General Public License v3 (AGPL-3.0) এর অধীনে লাইসেন্সকৃত। 
-
-কপিরাইট (c) ২০২৬ CodePagol
-
-সহজ ভাষায় এই লাইসেন্সের মূল শর্তাবলী ও নিয়মসমূহ:
-১. **ব্যবহার ও এডিট করার স্বাধীনতা:** যে কেউ এই সফটওয়্যারটি ব্যবহার, পরিবর্তন এবং নিজের প্রয়োজনমতো এডিট করতে পারবে।
-২. **এডিট করে বিক্রি করার অনুমতি:** কেউ চাইলে সফটওয়্যারটি এডিট বা পরিবর্তন করে বিক্রি করতে পারবে (বাণিজ্যিক ব্যবহার অনুমোদিত)।
-৩. **কোড ব্লক বা ক্লোজ-সোর্স করা নিষিদ্ধ:** কেউ এডিট বা মডিফাই করে বিক্রি করলেও কোডটি নিজের জন্য ব্লক বা ক্লোজড-সোর্স (Closed Source) করতে পারবে না। তাকে অবশ্যই সম্পূর্ণ সোর্স কোডটি এই একই AGPLv3 লাইসেন্সের অধীনে ওপেন রাখতে হবে।
-৪. **SaaS বা ক্লাউড হোস্টিং নিষেধাজ্ঞা (SaaS Loophole Protection):** অনেকে সোর্স কোড নিজের সার্ভারে হোস্ট করে কাস্টমারদের সার্ভিস হিসেবে (Software as a Service - SaaS) ব্যবহার করতে দেয় কিন্তু সোর্স কোড রিলিজ করে না। AGPLv3 লাইসেন্স অনুযায়ী, কেউ যদি এই সফটওয়্যারটি কোনো নেটওয়ার্ক সার্ভারে হোস্ট করে সেবা প্রদান (SaaS) করে, তবে তার ব্যবহারকারী কাস্টমারদের বাধ্যতামূলকভাবে সেই পরিবর্তিত সোর্স কোডটি ডাউনলোড করার সুযোগ দিতে হবে। অর্থাৎ, হোস্টিং করেও কোড লুকিয়ে রাখা যাবে না।
-৫. **অ্যাট্রিবিউশন এবং কপিরাইট:** কোনো কোম্পানি বা ব্যক্তি এই কোডটিকে নিজের নামে দাবি করতে পারবে না। মূল কপিরাইটে সর্বদা **CodePagol**-এর নাম ও ক্রেডিট নোটিশ থাকতে হবে।
-৬. **UI অ্যাট্রিবিউশন নোটিশ (বাধ্যতামূলক):** অ্যাপ্লিকেশনের যেকোনো পেজে দৃশ্যমানভাবে "Powered by CodePagol" বা "Designed by CodePagol" লেখাটি — https://codepagol.com লিংকসহ — রাখা বাধ্যতামূলক। এটি মুছে ফেলা, লুকিয়ে রাখা, পরিবর্তন করা বা অন্য নামে প্রতিস্থাপন করা সম্পূর্ণ নিষিদ্ধ। এই শর্ত লঙ্ঘন করলে স্বয়ংক্রিয়ভাবে এই লাইসেন্সের সমস্ত অধিকার বাতিল হয়ে যাবে।
-
-
--------------------------------------------------------------------------------
-ADDITIONAL ATTRIBUTION REQUIREMENT (UI Credit Notice)
--------------------------------------------------------------------------------
-
-In addition to the standard AGPL-3.0 terms, the following condition applies
-to ALL use, modification, and distribution of this software:
-
-  The visible "Powered by CodePagol" or "Designed by CodePagol" credit
-  notice — including the hyperlink to https://codepagol.com — MUST remain
-  clearly visible in the application's user interface at all times.
-
-You MAY NOT:
-  - Remove, hide, alter, or replace the CodePagol attribution text or link.
-  - Substitute a different brand name, URL, or logo in place of CodePagol.
-  - Use CSS, JavaScript, server-side logic, or any other technique to
-    obscure the notice from end users.
-  - Move the notice to a location that is not reasonably visible to
-    ordinary users of the application.
-
-You MAY:
-  - Restyle (font size, colour, position) the notice as long as it remains
-    clearly legible and visible to ordinary end users.
-  - Add your own additional branding alongside the CodePagol credit.
-
-Violation of this Attribution Requirement immediately and automatically
-terminates your rights under this License without notice, in addition to
-any other remedies available under applicable law.
-

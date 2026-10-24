@@ -126,11 +126,7 @@
 
                             <div class="collapse mt-2" id="purchaseInfo">
                                 <div class="card card-body text-start p-0">
-                                    <strong>Developer:</strong> Md. Jahangir Alam Rohan<br>
-                                    <strong>Mobile:</strong><a href="https://wa.me/8801840451881" class="p-0 btn btn-success btn-sm mt-2">
-                                        <i class="bi bi-whatsapp"></i> +8801840451881
-                                    </a><br>
-                                    <strong>Email:</strong> <a href="mailto:rohan9222@gmail.com">rohan9222@gmail.com</a>
+                                    <strong>Modified by:</strong> johirxofficial
                                 </div>
                             </div>
                         </div>
