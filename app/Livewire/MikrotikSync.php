@@ -6,6 +6,7 @@ use App\Http\Controllers\MikrotikController;
 use App\Models\BillingInfo;
 use App\Models\CustomersInfo;
 use App\Models\OfficialInfo;
+use App\Models\PackageList;
 use App\Models\PPPSecrets;
 use App\Models\RouterList;
 use Carbon\Carbon;
@@ -132,6 +133,10 @@ class MikrotikSync extends Component
 
     public function userSync($pppSecrets)
     {
+        // Importing a large PPP secret list can take longer than PHP's default
+        // execution time; give the sync enough time to finish atomically.
+        @set_time_limit(0);
+
         foreach ($pppSecrets as $routerName => $result) {
             if (! is_array($result)) {
                 flash()->error("Invalid response for router {$routerName}");
@@ -167,22 +172,8 @@ class MikrotikSync extends Component
                     ->get()
                     ->keyBy(fn ($item) => strtolower($item->username));
 
-                // 3. Pre-fetch latest customer unique ID count
-                $prefix = siteUrlSettings('customer_id_prefix') ?: 'FCNET';
-                $lastCustomerUniqueId = CustomersInfo::orderBy('id', 'desc')->value('customer_unique_id');
-                if ($lastCustomerUniqueId) {
-                    if (str_starts_with($lastCustomerUniqueId, $prefix)) {
-                        $lastIdCount = (int) substr($lastCustomerUniqueId, strlen($prefix));
-                    } else {
-                        if (preg_match('/(\d+)$/', $lastCustomerUniqueId, $matches)) {
-                            $lastIdCount = (int) $matches[1];
-                        } else {
-                            $lastIdCount = 99;
-                        }
-                    }
-                } else {
-                    $lastIdCount = 99;
-                }
+                // 3. Customer ID prefix (fresh IDs are generated per customer)
+                $prefix = siteUrlSettings('customer_id_prefix') ?: 'JOHIR';
 
                 $statusGroups = []; // For bulk status updates
 
@@ -294,18 +285,14 @@ class MikrotikSync extends Component
                     } else {
                         $newSecret = PPPSecrets::create($secretData);
                         $createdCount++;
-                        $lastIdCount++;
-                        $newId = $prefix.$lastIdCount;
+                    }
 
-                        CustomersInfo::create([
-                            'customer_unique_id' => $newId,
-                            'ppp_user_id' => $newSecret->id,
-                            'customer_name' => $username,
-                            'status' => 'pending',
-                            'connection_date' => Carbon::now(),
-                        ]);
-                        BillingInfo::create(['customer_bill_unique_id' => $newId, 'billing_type' => 'prepaid', 'auto_disable_date' => Carbon::now()]);
-                        OfficialInfo::create(['customer_office_unique_id' => $newId]);
+                    // Every synced secret must have a complete, billable customer
+                    // record. This also repairs users imported by older versions
+                    // that were left without a package, rent or official record.
+                    $secret = $existingSecret ?: ($newSecret ?? null);
+                    if ($secret) {
+                        $this->ensureCustomerForSecret($secret, $routerName, $prefix);
                     }
                 }
 
@@ -329,6 +316,116 @@ class MikrotikSync extends Component
                 flash()->error('Error syncing router '.$routerName.': '.$e->getMessage());
             }
         }
+    }
+
+    /**
+     * Find the package that matches a PPP profile for a router.
+     * Router-specific packages win over global (router_name = null) packages.
+     */
+    private function packageForProfile(string $routerName, ?string $profile): ?PackageList
+    {
+        if (! $profile) {
+            return null;
+        }
+
+        return PackageList::whereRaw('LOWER(package) = ?', [strtolower($profile)])
+            ->where(function ($query) use ($routerName) {
+                $query->where('router_name', $routerName)->orWhereNull('router_name');
+            })
+            ->orderByRaw('CASE WHEN router_name IS NULL THEN 1 ELSE 0 END')
+            ->first();
+    }
+
+    /**
+     * Generate the next unique customer ID, never reusing an existing one.
+     */
+    private function nextCustomerId(string $prefix): string
+    {
+        $last = CustomersInfo::withTrashed()->orderByDesc('id')->value('customer_unique_id');
+        $count = 99;
+
+        if ($last) {
+            if (str_starts_with($last, $prefix)) {
+                $count = (int) substr($last, strlen($prefix));
+            } elseif (preg_match('/(\d+)$/', $last, $matches)) {
+                $count = (int) $matches[1];
+            }
+        }
+
+        do {
+            $count++;
+            $id = $prefix.$count;
+        } while (CustomersInfo::withTrashed()->where('customer_unique_id', $id)->exists());
+
+        return $id;
+    }
+
+    /**
+     * Create or repair the customer, billing and official records for a PPP secret.
+     */
+    private function ensureCustomerForSecret(PPPSecrets $secret, string $routerName, string $prefix): void
+    {
+        $customer = CustomersInfo::where('ppp_user_id', $secret->id)->first();
+
+        // Repair imports that lost their link to the PPP secret. Only link when
+        // the username is unambiguous, so duplicate names never attach to the
+        // wrong customer record.
+        if (! $customer && $secret->username) {
+            $candidates = CustomersInfo::whereNull('ppp_user_id')
+                ->whereRaw('LOWER(customer_name) = ?', [strtolower($secret->username)])
+                ->limit(2)
+                ->get();
+
+            if ($candidates->count() === 1) {
+                $customer = $candidates->first();
+                $customer->ppp_user_id = $secret->id;
+                $customer->save();
+            }
+        }
+
+        $package = $this->packageForProfile($routerName, $secret->profile);
+
+        if (! $customer) {
+            $customer = CustomersInfo::create([
+                'customer_unique_id' => $this->nextCustomerId($prefix),
+                'ppp_user_id' => $secret->id,
+                'customer_name' => $secret->username,
+                'status' => match ($secret->status) {
+                    'active' => 'active',
+                    'disable' => 'disable',
+                    default => 'pending',
+                },
+                'connection_date' => Carbon::now(),
+                'package_id' => $package?->id,
+            ]);
+        } elseif ($package && ! $customer->package_id) {
+            $customer->package_id = $package->id;
+            $customer->save();
+        }
+
+        $billing = BillingInfo::firstOrCreate(
+            ['customer_bill_unique_id' => $customer->customer_unique_id],
+            [
+                'billing_type' => 'prepaid',
+                'monthly_rent' => $package ? (float) $package->price : 0,
+                'auto_disable' => 1,
+                'auto_disable_date' => Carbon::now(),
+            ]
+        );
+
+        // Repair older imports that were created with a zero monthly rent.
+        if ($package && (float) $billing->monthly_rent === 0.0 && (float) $package->price > 0) {
+            $billing->monthly_rent = (float) $package->price;
+            $billing->save();
+        }
+
+        OfficialInfo::firstOrCreate(
+            ['customer_office_unique_id' => $customer->customer_unique_id],
+            [
+                'billing_type' => 'prepaid',
+                'connection_type' => 'fiber',
+            ]
+        );
     }
 
     public function dataSync($id)
