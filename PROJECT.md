@@ -66,19 +66,24 @@ systemctl --user restart johirxofficial
 ## Database
 
 ```bash
+# Import the bundled demo database (schema + demo data)
+mysql -u johirxofficial -p johirxofficial < database/demo.sql
+
 # Backup
-mysqldump -uroot -p johirxofficial > backup-$(date +%F).sql
+mysqldump -u johirxofficial -p --single-transaction johirxofficial > backup-$(date +%F).sql
 
 # Restore
-mysql -uroot -p johirxofficial < backup.sql
+mysql -u johirxofficial -p johirxofficial < backup.sql
 ```
 
 ## Separate from the original
 
-- `.git` was recreated as a fresh repository (no `origin` remote).
-- New database: `johirxofficial` (copy of the previous data).
-- New session cookie/domain and cache prefix, so logins do not clash.
-- Runs on a different port (`8001`) while the original runs on `8000`.
+- `.git` is its own repository with no connection to the original project.
+- Own database: `johirxofficial`.
+- Own session cookie, cache prefix and systemd services.
+- Runs on port `8001` while the original runs on `8000`.
+- Full server installation guide: [`README.md`](README.md).
+- Demo database: [`database/demo.sql`](database/demo.sql).
 
 ## License
 

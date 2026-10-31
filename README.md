@@ -1,231 +1,621 @@
-# johirxofficial — MikroTik RouterOS API & johirxofficial Management System
+# johirxofficial ISP Billing
 
-<div align="center">
+A complete, self-hosted ISP billing and network management platform for MikroTik-based ISPs.
 
-![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)
-![PHP](https://img.shields.io/badge/PHP-8.3%2B-777BB4?style=for-the-badge&logo=php&logoColor=white)
-![Filament](https://img.shields.io/badge/Filament-3.x-F59E0B?style=for-the-badge&logo=laravel&logoColor=white)
-![MikroTik API](https://img.shields.io/badge/MikroTik-RouterOS%20API-000000?style=for-the-badge)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
+Manage customers, packages, billing, payments, MikroTik routers, PPPoE users, hotspot vouchers, resellers, SMS and reports — all from one dashboard.
 
-A premium, modern Internet Service Provider (ISP) Billing & MikroTik RouterOS API management platform built on Laravel, Livewire, and Filament. It allows network administrators and resellers to seamlessly manage subscribers, PPPoE connections, hotspot vouchers, automated payment reconciliations, and commissions from a unified interface.
-
-[Key Features](#key-features) • [Architecture](#system-architecture) • [Getting Started](#getting-started) • [Payment Webhooks](#webhook--mfs-auto-activation-setup) • [Screenshots](#screenshots-preview) • [Tech Stack](#tech-stack) • [License](#license)
-
-</div>
+> **Modified by johirxofficial**
 
 ---
 
-## Key Features
+## Contents
 
-🚀 **Comprehensive Billing & User Management**
-- **PPPoE Secrets & Hotspot Billing:** Fully integrated CRUD operations directly communicating with MikroTik RouterOS.
-- **Dynamic Address Pool Allocation:** Set and track IP pools for PPPoE and Hotspots.
-- **Router Live Logging:** Collects real-time events and log outputs from connected MikroTik devices.
-
-💼 **Reseller & Commission Ecosystem**
-- **Wallet & Transactions:** Resellers can manage a credit-based wallet, buy packages or generate vouchers, and check their purchase history.
-- **Upfront & Deferred Commissions:** Flexible configuration for commission structures paid upfront or during consumer activation.
-- **Voucher Generator:** Bulk-generate internet access vouchers for Hotspot packages.
-
-💳 **Automated Payment & Activation Webhooks**
-- **bKash Merchant IPN:** Automated instant activation via bKash Merchant Webhook.
-- **Android SMS Forwarder Integration:** Automated MFS SMS parsing (bKash, Nagad, Rocket) via specialized webhooks using secure API tokens.
-- **Auto-Provisioning:** Instantly activates client lines on the MikroTik router upon successful payment matching.
-
-🛡️ **Administration & Audits**
-- **Filament Admin Panel:** Modern, responsive, and gorgeous dashboard for admins and resellers.
-- **Spatie Activity Logs:** Thorough audit trails tracking every administrative action, payment edit, and router modification.
-- **Role-Based Access Control:** Fine-grained authorization utilizing Spatie Laravel Permission.
-- **Full-Text Search:** Scalable searches across customers and bills using Laravel Scout.
+- [Features](#features)
+- [Server requirements](#server-requirements)
+- [What is in the ZIP](#what-is-in-the-zip)
+- [Installation on a fresh server](#installation-on-a-fresh-server)
+  - [1. Install server packages](#1-install-server-packages)
+  - [2. Create the database](#2-create-the-database)
+  - [3. Upload and extract the project](#3-upload-and-extract-the-project)
+  - [4. Install PHP dependencies](#4-install-php-dependencies)
+  - [5. Configure `.env`](#5-configure-env)
+  - [6. Import the demo database](#6-import-the-demo-database)
+  - [7. Storage link and permissions](#7-storage-link-and-permissions)
+  - [8. Quick test with PHP's built-in server](#8-quick-test-with-phps-built-in-server)
+  - [9. Production web server (Nginx)](#9-production-web-server-nginx)
+  - [10. Queue worker (Supervisor)](#10-queue-worker-supervisor)
+  - [11. Scheduler (cron)](#11-scheduler-cron)
+- [Default login credentials](#default-login-credentials)
+- [First things to do after login](#first-things-to-do-after-login)
+- [MikroTik setup and user import](#mikrotik-setup-and-user-import)
+- [Billing workflow](#billing-workflow)
+- [Payment gateways and SMS](#payment-gateways-and-sms)
+- [Backup and restore](#backup-and-restore)
+- [Updating the application](#updating-the-application)
+- [Troubleshooting](#troubleshooting)
+- [Security checklist](#security-checklist)
+- [License](#license)
 
 ---
 
-## System Architecture
+## Features
 
-The interaction flow between the client, administrative panel, MikroTik routers, and payment webhooks:
+- Customer management with complete profile, billing and official records
+- ISP packages with router/profile matching
+- Monthly bill generation, due tracking, advance and discount support
+- Payment collection, invoices and due reports
+- MikroTik router integration over API or SSH
+- PPPoE secrets import from MikroTik into the web panel
+- Auto package matching during import (router-specific package first, then global)
+- Hotspot voucher generation, printing and sales tracking
+- Customer self-service portal (`/portal`)
+- Reseller panel with wallet and commissions
+- SMS notifications and templates
+- Multiple payment gateway integrations (bKash, Nagad, SSLCommerz, Stripe, PayPal and more)
+- Role and permission management
+- Activity logs, login logs and system logs
 
-```mermaid
-graph TD
-    Client[Client / Reseller / Admin] -->|HTTPS Requests| Laravel[Laravel Filament App]
-    Laravel -->|Spatie RBAC| Auth[Access Control / Jetstream]
-    Laravel -->|RouterOS API / Port 8728| RouterOS[MikroTik RouterOS]
-    Laravel -->|Eloquent ORM| DB[(MySQL Database)]
-    
-    Android[Android SMS Forwarder App] -->|MFS SMS Webhook / Sanctum Token| API[Laravel API Endpoint]
-    bKash[bKash IPN Server] -->|Payment Callback| API
-    API -->|Reconcile & Match| Laravel
-    
-    Reseller[Reseller Wallet] -->|Purchase Package / Voucher| Customer[PPP Secrets / Hotspot Vouchers]
-    Customer -->|Provision via API| RouterOS
+---
+
+## Server requirements
+
+| Component | Minimum |
+|---|---|
+| OS | Ubuntu 22.04 / 24.04, Debian 12, or any Linux server |
+| PHP | **8.3 or newer** |
+| PHP extensions | `bcmath`, `ctype`, `curl`, `dom`, `fileinfo`, `gd`, `intl`, `mbstring`, `openssl`, `pdo_mysql`, `tokenizer`, `xml`, `zip` |
+| Database | MySQL 8.0+ or MariaDB 10.6+ |
+| Composer | 2.x |
+| Web server | Nginx (recommended) or Apache |
+| Node.js | Optional — compiled frontend assets are already included |
+
+You also need:
+
+- A domain name pointed to the server (optional for LAN-only use)
+- MikroTik router API/SSH access for router features
+
+---
+
+## What is in the ZIP
+
+```
+johirxofficial-isp-billing/
+├── app/                  Laravel application code
+├── bootstrap/
+├── config/
+├── database/
+│   ├── demo.sql          Full demo database (schema + demo data)
+│   ├── migrations/
+│   └── seeders/
+├── deploy/               systemd service examples
+├── lang/
+├── public/               Web root (contains compiled assets in public/build)
+├── resources/
+├── routes/
+├── storage/
+├── tests/
+├── .env.example          Environment template
+├── artisan
+├── composer.json
+├── composer.lock
+├── LICENSE
+├── PROJECT.md
+└── README.md             This file
 ```
 
----
-
-## Getting Started
-
-### Prerequisites
-- PHP >= 8.3
-- Composer
-- Node.js (with npm or yarn)
-- MySQL / PostgreSQL
-- MikroTik RouterOS with API Service enabled (default port `8728` or SSL `8729`)
-
-### Installation Steps
-
-1. **Project Location**
-   ```bash
-   cd /home/desktop/spacex/johirxofficial
-   ```
-   This is our own independent repository (no upstream remote).
-
-2. **Install Composer Dependencies**
-   ```bash
-   composer install
-   ```
-
-3. **Install Node Modules & Compile Assets**
-   ```bash
-   npm install
-   npm run build
-   ```
-
-4. **Setup Environment Configuration**
-   Copy the example environment file and generate the application key:
-   ```bash
-   cp .env.example .env
-   php artisan key:generate
-   ```
-
-5. **Configure Database & Router in `.env`**
-   Update your database credentials, mail settings, and security keys. Make sure to specify the local URL for IPNs:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=mikrotik_billing
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-6. **Run Migrations & Seed Dummy/Setup Data**
-   ```bash
-   php artisan migrate --seed
-   ```
-   *Note: This creates basic roles, permissions, administrative profiles, and placeholder system configurations.*
-
-7. **Start Development Environment**
-   You can run the full environment (web server, queue listener, and Vite assets compiler) using a single command:
-   ```bash
-   npm run dev
-   ```
+The ZIP does **not** contain `vendor/`, `node_modules/`, `.env`, logs, or session/cache files. They are generated during installation.
 
 ---
 
-## Task Scheduling (Cron Job)
+## Installation on a fresh server
 
-To automate monthly billing generation, daily SMS alerts, user disabling, MikroTik logging, and background synchronization, configure a single cron entry on your server:
+The examples below use Ubuntu/Debian and the domain `billing.example.com`. Replace it with your own domain or server IP.
+
+### 1. Install server packages
 
 ```bash
-* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+sudo apt update
+sudo apt install -y nginx mysql-server composer unzip curl \
+  php8.3-fpm php8.3-cli php8.3-mysql php8.3-mbstring php8.3-xml \
+  php8.3-curl php8.3-zip php8.3-gd php8.3-intl php8.3-bcmath
 ```
 
-### Scheduled Tasks:
-- **Router Log Polling:** Runs every minute to pull log events from MikroTik.
-- **Monthly Billing:** Automatically runs on the last day of the month at `23:45` (Asia/Dhaka timezone).
-- **Billing SMS Notifications:** Sends out monthly bill SMS on the 1st of every month at `10:00`.
-- **Alert Creation:** Generates daily connection & payment alerts at `08:00`.
-- **User Disabling:** Automatically disables expired secrets/users daily at `08:30`.
-- **MikroTik Sync:** Daily background synchronization of all secrets and hotspot accounts.
-- **Log Pruning:** Cleans up router logs older than defined retention days daily at `04:00`.
+> On distributions where PHP 8.3 is not in the default repository, add the
+> `ondrej/php` PPA first:
+>
+> ```bash
+> sudo add-apt-repository ppa:ondrej/php
+> sudo apt update
+> ```
+
+Start and enable the services:
+
+```bash
+sudo systemctl enable --now nginx mysql php8.3-fpm
+```
+
+### 2. Create the database
+
+Log in to MySQL as an administrator:
+
+```bash
+sudo mysql
+```
+
+Run:
+
+```sql
+CREATE DATABASE johirxofficial
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'johirxofficial'@'localhost'
+  IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+
+CREATE USER 'johirxofficial'@'127.0.0.1'
+  IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
+
+GRANT ALL PRIVILEGES ON johirxofficial.* TO 'johirxofficial'@'localhost';
+GRANT ALL PRIVILEGES ON johirxofficial.* TO 'johirxofficial'@'127.0.0.1';
+
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+Use a strong password — never use the MySQL `root` account for the application.
+
+### 3. Upload and extract the project
+
+Upload the ZIP to the server, then:
+
+```bash
+cd /var/www
+sudo unzip johirxofficial-isp-billing.zip
+sudo mv johirxofficial-isp-billing johirxofficial
+cd /var/www/johirxofficial
+```
+
+Set ownership (adjust `www-data` if your web server uses another user):
+
+```bash
+sudo chown -R www-data:www-data /var/www/johirxofficial
+```
+
+### 4. Install PHP dependencies
+
+```bash
+cd /var/www/johirxofficial
+sudo -u www-data composer install --no-dev --optimize-autoloader
+```
+
+If `composer` is not installed:
+
+```bash
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+```
+
+### 5. Configure `.env`
+
+```bash
+cd /var/www/johirxofficial
+sudo -u www-data cp .env.example .env
+sudo -u www-data php artisan key:generate
+```
+
+Edit `.env`:
+
+```bash
+sudo nano .env
+```
+
+Minimum production settings:
+
+```dotenv
+APP_NAME="johirxofficial"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://billing.example.com
+APP_TIMEZONE=Asia/Dhaka
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=johirxofficial
+DB_USERNAME=johirxofficial
+DB_PASSWORD=CHANGE_THIS_PASSWORD
+
+SESSION_DRIVER=database
+SESSION_DOMAIN=
+SESSION_COOKIE=johirxofficial_session
+
+CACHE_STORE=file
+CACHE_PREFIX=johirxofficial_
+QUEUE_CONNECTION=database
+
+FILESYSTEM_DISK=public
+MAIL_MAILER=log
+MFS_SMS_TOKEN=change-me
+```
+
+> `APP_URL` must match the URL users open in the browser.
+> Set `APP_DEBUG=false` in production.
+> If you use HTTPS, set `APP_URL=https://...`.
+
+### 6. Import the demo database
+
+The bundled demo SQL contains the complete schema plus:
+
+- Super Admin and Reseller accounts
+- Roles and permissions
+- Site settings
+- Three example packages
+- 54 database tables
+
+Import it:
+
+```bash
+cd /var/www/johirxofficial
+mysql -u johirxofficial -p johirxofficial < database/demo.sql
+```
+
+Enter the database password you created in step 2.
+
+> The demo dump intentionally contains **no** live routers, PPP secrets,
+> customers, payment credentials or logs. Add your own after login.
+
+If you prefer an empty database without demo packages, run migrations instead:
+
+```bash
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan db:seed --class=SuperAdminSeeder --force
+```
+
+### 7. Storage link and permissions
+
+```bash
+cd /var/www/johirxofficial
+sudo -u www-data php artisan storage:link
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+```
+
+### 8. Quick test with PHP's built-in server
+
+Before configuring Nginx, verify that the app works:
+
+```bash
+cd /var/www/johirxofficial
+sudo -u www-data php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Open `http://SERVER_IP:8000` — you should see the landing page and the
+**Go to Login** button. Stop the server with `Ctrl+C` when finished.
+
+### 9. Production web server (Nginx)
+
+Create `/etc/nginx/sites-available/johirxofficial`:
+
+```nginx
+server {
+    listen 80;
+    server_name billing.example.com;
+    root /var/www/johirxofficial/public;
+
+    index index.php;
+    charset utf-8;
+
+    client_max_body_size 20M;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    error_page 404 /index.php;
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}
+```
+
+Enable it and reload Nginx:
+
+```bash
+sudo ln -s /etc/nginx/sites-available/johirxofficial /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx
+```
+
+For HTTPS:
+
+```bash
+sudo apt install -y certbot python3-certbot-nginx
+sudo certbot --nginx -d billing.example.com
+```
+
+Then set `APP_URL=https://billing.example.com` in `.env` and run:
+
+```bash
+sudo -u www-data php artisan config:clear
+```
+
+### 10. Queue worker (Supervisor)
+
+SMS, notifications and background jobs need a queue worker.
+
+```bash
+sudo apt install -y supervisor
+```
+
+Create `/etc/supervisor/conf.d/johirxofficial.conf`:
+
+```ini
+[program:johirxofficial-queue]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/johirxofficial/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/johirxofficial/storage/logs/queue.log
+stopwaitsecs=3600
+```
+
+Reload Supervisor:
+
+```bash
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start johirxofficial-queue:*
+```
+
+### 11. Scheduler (cron)
+
+The scheduler generates monthly bills, expires users and runs maintenance jobs.
+
+```bash
+sudo crontab -u www-data -e
+```
+
+Add:
+
+```cron
+* * * * * cd /var/www/johirxofficial && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### Final optimisation
+
+```bash
+cd /var/www/johirxofficial
+sudo -u www-data php artisan optimize:clear
+sudo -u www-data php artisan config:cache
+sudo -u www-data php artisan route:cache
+sudo -u www-data php artisan view:cache
+```
 
 ---
 
-## Webhook & MFS Auto-Activation Setup
+## Default login credentials
 
-The platform features automated activation through payment notifications.
+Open:
 
-### 1. bKash Merchant Webhook (IPN)
-Configure your bKash Merchant account to forward payments to the following route:
-- **Endpoint URL:** `https://your-domain.com/api/payment/bkash/ipn`
-- **Method:** `POST`
-- **CSRF Protection:** Automatically bypassed for this route.
-- **Action:** Validates the transaction status, amounts, and maps the `payerReference` to the subscriber code to instantly renew and enable their MikroTik PPPoE / Hotspot connection.
+```
+https://billing.example.com/login
+```
 
-### 2. MFS SMS Receiver Webhook (Android Forwarder)
-For local manual payments where a merchant portal isn't available, you can use any Android SMS Forwarder app (e.g., **SMS to Webhook**, **MacroDroid**, or **Tasker**) to forward received transactional SMS.
+| Role | Email | Password |
+|---|---|---|
+| Super Admin | `admin@johirxofficial.local` | `johirxofficial` |
+| Reseller | `reseller@johirxofficial.local` | `password` |
 
-- **Endpoint URL (Header Auth):** `https://your-domain.com/api/payment/mfs/sms-receiver`
-  - **Headers Required:**
-    - `Content-Type: application/json`
-    - `Authorization: Bearer [YOUR_SANCTUM_API_TOKEN]`
-- **Alternative URL (Query Parameter Auth):**
-  - `https://your-domain.com/api/payment/mfs/sms-receiver?api_token=[YOUR_SANCTUM_API_TOKEN]`
-  *(Generate your token from: Admin Dashboard -> Profile Settings -> API Tokens)*
+> **Change both passwords immediately after your first login.**
 
-- **Sample Request Payload:**
-  ```json
-  {
-    "sender": "bKash",
-    "message": "You have received BDT 500.00 from 01712345678. Ref CUSTOMER_1029. Fee 0.00. Balance 12000.00. TrxID A1B2C3D4E5"
-  }
-  ```
+Customer portal:
 
-#### Recommended Forwarding Rules (Security Best Practices)
-To prevent leakage of private OTPs or unauthorized code executions:
-- **Sender Filter:** Set the app to only forward messages matching `bKash`, `NAGAD`, `Rocket`, `16216`, or `DBBL`.
-- **Message Content Filter:**
-  - *Must contain:* `Received BDT`, `received`, `Payment`, `TxnID`, `TrxID`, or `Tk`.
-  - *Must NOT contain:* `OTP`, `verification code`, `security code`, `PIN`, or `password`.
+```
+https://billing.example.com/portal
+```
 
 ---
 
-## Screenshots Preview
+## First things to do after login
 
-| **Dashboard Analytics & System Health** | **Router & IP Management** |
-|:---:|:---:|
-| ![Dashboard Preview](public/images/interface/dashboard-auto.png) <br> *Placeholder: Admin statistics, active routers, and revenue collection charts.* | ![Router Management](public/images/interface/live-traffic-monitor.png) <br> *Placeholder: Connected MikroTik routers, status checker, and synchronization.* |
-| **Subscriber Profiles & PPP Secrets** | **Reseller Commision Wallet & Vouchers** |
-| ![PPP Secrets Management](public/images/interface/customer-setup.png) <br> *Placeholder: Managing user packages, passwords, profiles, and connection state.* | ![Reseller Commission Panel](public/images/interface/expance-management-and-profite-loss.png) <br> *Placeholder: Reseller credit dashboard, commission transaction log, and vouchers.* |
+1. Go to **Settings → Site Settings** and set:
+   - Site name and title
+   - Logo and favicon
+   - Currency, timezone and locale
+   - Customer ID prefix
+2. Change the Super Admin email and password.
+3. Delete or change the demo Reseller account.
+4. Create your real packages (**Packages**).
+5. Add your MikroTik router (**MikroTik Setup**).
+6. Import PPPoE users from the router.
+7. Configure payment gateways and SMS if needed.
 
 ---
 
-## Tech Stack
+## MikroTik setup and user import
 
-The core libraries and packages keeping the platform running smoothly:
+### Create a MikroTik API user
 
-### Backend Architecture
-- **Framework:** Laravel 12.x
-- **Admin Panel:** Filament PHP v3
-- **Dynamic Frontend:** Livewire v4
-- **Router Connection:** [Evilfreelancer RouterOS API PHP Wrapper](https://github.com/evilfreelancer/routeros-api-php)
-- **Role Control:** [Spatie Laravel Permission](https://github.com/spatie/laravel-permission)
-- **Audit Trails:** [Spatie Activity Log](https://github.com/spatie/laravel-activitylog)
-- **PDF Invoices:** [carlos-meneses/laravel-mpdf](https://github.com/carlos-meneses/laravel-mpdf)
-- **Spreadsheets:** [phpoffice/phpspreadsheet](https://github.com/PHPOffice/PhpSpreadsheet) & [spatie/simple-excel](https://github.com/spatie/simple-excel)
+On the router (RouterOS terminal):
 
-### Frontend & Assets
-- **CSS Utility Engine:** Tailwind CSS, Bootstrap 5, Custom Sass
-- **Chart Visualizations:** ApexCharts
-- **Component Helpers:** Popper.js & Moment.js
-- **UI Libraries:** jQuery & jQuery UI
-- **Notifications:** SweetAlert2 & Toastr
+```routeros
+/user group add name=api-read write policy=read,api,ssh,test,winbox
+/user add name=billing password=CHOOSE_A_STRONG_PASSWORD group=api-read
+
+/ip service enable api
+/ip service set api port=8728
+/ip service enable ssh
+```
+
+For API-SSL, enable `api-ssl` and use port `8729`.
+
+### Add the router in the panel
+
+1. Open **MikroTik Setup** from the sidebar.
+2. Enter router name, IP address, API port (usually `8728`), SSH port (`22`), username and password.
+3. Turn the connection toggle **on**.
+4. Click **Data Sync** to import PPPoE secrets.
+
+### What the import does
+
+For every PPP secret on the router, the application:
+
+- Creates or updates the synced PPP record
+- Creates the customer record if it does not exist
+- Creates billing and official records
+- Matches the PPP **profile** to a package:
+  - router-specific package first
+  - global package second
+- Copies the package price into the customer's monthly rent
+- Mirrors the router state: `active` → active, `disabled` → disable
+
+Re-running sync repairs older imports that were created without a package,
+rent or official record.
+
+> Package/profile names must match. For example, a PPP profile named `10M`
+> should have a package named `10M` for automatic rent assignment.
+
+### Billing after import
+
+Newly imported active users appear as **active** customers and are included in
+the normal monthly billing run. Imported users that are disabled on the router
+appear as **disable**. You can edit any customer to set a package, rent,
+discount, advance or due date.
+
+Use **Customer Summary**, **Payment Collection** and **Reports** to manage
+billing day to day.
+
+---
+
+## Billing workflow
+
+1. **Create packages** — name, price, speed and MikroTik rate limit.
+2. **Add or import customers** — each customer gets a unique ID, billing record
+   and official record.
+3. **Generate bills** — the scheduler runs automatically, or use the manual
+   bill generation action.
+4. **Collect payments** — record cash, bKash, Nagad, bank or gateway payments.
+5. **Monitor dues** — use customer filters and reports.
+6. **Auto-disable** — expired customers can be disabled on the router
+   automatically by the scheduled tasks.
+
+---
+
+## Payment gateways and SMS
+
+### Payment gateways
+
+Go to **Settings → Payment Gateways**. Each gateway supports sandbox and live
+credentials. Credentials are encrypted with your installation's `APP_KEY`.
+
+> If you ever regenerate `APP_KEY`, saved gateway credentials must be re-entered.
+
+### SMS
+
+Go to **SMS Setup**. Configure your SMS gateway and templates. The MFS SMS
+forwarder webhook uses `MFS_SMS_TOKEN` from `.env` — change the default value.
+
+---
+
+## Backup and restore
+
+### Database backup
+
+```bash
+mysqldump -u johirxofficial -p --single-transaction johirxofficial \
+  > backup-$(date +%F-%H%M).sql
+```
+
+### Database restore
+
+```bash
+mysql -u johirxofficial -p johirxofficial < backup-2026-01-01-1200.sql
+```
+
+### Files backup
+
+Back up:
+
+```
+/var/www/johirxofficial/.env
+/var/www/johirxofficial/storage/app/public
+```
+
+Keep `APP_KEY` safe. It is required to decrypt stored router and gateway
+credentials.
+
+---
+
+## Updating the application
+
+```bash
+cd /var/www/johirxofficial
+sudo -u www-data php artisan down
+sudo -u www-data composer install --no-dev --optimize-autoloader
+sudo -u www-data php artisan migrate --force
+sudo -u www-data php artisan optimize:clear
+sudo -u www-data php artisan config:cache
+sudo -u www-data php artisan route:cache
+sudo -u www-data php artisan view:cache
+sudo -u www-data php artisan up
+```
+
+---
+
+## Troubleshooting
+
+| Problem | Solution |
+|---|---|
+| `500 Server Error` | Check `storage/logs/laravel.log`; ensure `storage` and `bootstrap/cache` are writable by `www-data`. |
+| `could not find driver` | Install `php8.3-mysql` and restart PHP-FPM. |
+| `Access denied for user` | Check `DB_USERNAME` / `DB_PASSWORD` in `.env` and the MySQL user grants. |
+| Blank page / assets missing | Run `php artisan storage:link`; ensure `public/build` exists. |
+| Login redirects back to login | Check `APP_URL`, `SESSION_DOMAIN` (must be empty or match the domain) and clear config cache. |
+| Changes not visible | Run `php artisan optimize:clear`. |
+| Queue jobs not running | Check Supervisor status and `storage/logs/queue.log`. |
+| Scheduler not running | Verify the cron entry and run `php artisan schedule:run` manually. |
+| MikroTik connection failed | Check API/SSH service, firewall, port and router credentials. |
+| Imported users show no package/rent | Package name must match the PPP profile name; re-run sync after creating the package. |
+| Cannot delete a router | The delete action now removes its synced PPP secrets and router-scoped data transactionally. Packages are kept as global packages. |
+
+---
+
+## Security checklist
+
+- [ ] `APP_ENV=production` and `APP_DEBUG=false`
+- [ ] Use HTTPS
+- [ ] Change the default admin and reseller passwords
+- [ ] Use a dedicated MySQL user, not `root`
+- [ ] Never commit `.env` or database dumps containing real customer data
+- [ ] Keep `APP_KEY` backed up and private
+- [ ] Change `MFS_SMS_TOKEN`
+- [ ] Restrict MikroTik API/SSH access to the application server IP
+- [ ] Keep regular off-server backups
+- [ ] Keep PHP, MySQL and the application updated
 
 ---
 
 ## License
 
-This project is open-source software licensed under the [AGPL-3.0 license](/LICENSE).
+This project is distributed under the **AGPL-3.0** license. See [`LICENSE`](LICENSE).
 
-Modified by **johirxofficial**.
-
-See [PROJECT.md](PROJECT.md) for this installation, branding and management commands.
-
----
-
-
----
-
-## Modified by
-
-**johirxofficial**
+**Modified by johirxofficial.**
