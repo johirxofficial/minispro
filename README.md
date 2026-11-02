@@ -4,6 +4,9 @@ A complete, self-hosted ISP billing and network management platform for MikroTik
 
 Manage customers, packages, billing, payments, MikroTik routers, PPPoE users, hotspot vouchers, resellers, SMS and reports — all from one dashboard.
 
+**Repository:** https://github.com/johirxofficial/minispro
+**Release ZIP:** https://github.com/johirxofficial/minispro/releases/latest
+
 > **Modified by johirxofficial**
 
 ---
@@ -170,7 +173,7 @@ Upload the ZIP to the server, then:
 
 ```bash
 cd /var/www
-sudo unzip minispro.zip
+sudo unzip minispro-v1.0.0.zip
 cd /var/www/minispro
 ```
 
