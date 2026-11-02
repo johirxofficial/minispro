@@ -235,7 +235,7 @@ class WalledGardenSetup extends Component
             // 1. Create/Update PPP Profile
             try {
                 // Try to add, catch if exists
-                $ctrl->singleWrite($routerName, "/ppp profile add name=\"{$expiredProfile}\" rate-limit=\"{$this->expired_speed}\" address-list=EXPIRED_USERS comment=\"Managed by johirxofficial\"");
+                $ctrl->singleWrite($routerName, "/ppp profile add name=\"{$expiredProfile}\" rate-limit=\"{$this->expired_speed}\" address-list=EXPIRED_USERS comment=\"Managed by minispro\"");
             } catch (\Exception $e) {
                 if (str_contains($e->getMessage(), 'already has') || str_contains($e->getMessage(), 'already exists')) {
                     $ctrl->singleWrite($routerName, "/ppp profile set [find name=\"{$expiredProfile}\"] rate-limit=\"{$this->expired_speed}\" address-list=EXPIRED_USERS");
@@ -246,7 +246,7 @@ class WalledGardenSetup extends Component
 
             // 2. Create/Update Hotspot User Profile
             try {
-                $ctrl->singleWrite($routerName, "/ip hotspot user profile add name=\"{$expiredProfile}\" address-list=EXPIRED_USERS rate-limit=\"{$this->expired_speed}\" comment=\"Managed by johirxofficial\"");
+                $ctrl->singleWrite($routerName, "/ip hotspot user profile add name=\"{$expiredProfile}\" address-list=EXPIRED_USERS rate-limit=\"{$this->expired_speed}\" comment=\"Managed by minispro\"");
             } catch (\Exception $e) {
                 if (str_contains($e->getMessage(), 'already has') || str_contains($e->getMessage(), 'already exists')) {
                     $ctrl->singleWrite($routerName, "/ip hotspot user profile set [find name=\"{$expiredProfile}\"] address-list=EXPIRED_USERS rate-limit=\"{$this->expired_speed}\"");

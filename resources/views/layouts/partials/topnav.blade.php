@@ -11,9 +11,9 @@
             @else
                 @if (siteUrlSettings('site_icon'))
                     <img class="me-2" src="{{ site_image(siteUrlSettings('site_icon')) }}" alt="" width="40" />
-                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'johirxofficial' }}</span>
+                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'minispro' }}</span>
                 @else
-                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'johirxofficial' }}</span>
+                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'minispro' }}</span>
                 @endif
             @endif
         </div>
@@ -37,9 +37,9 @@
             @else
                 @if (siteUrlSettings('site_icon'))
                     <img class="me-2" src="{{ site_image(siteUrlSettings('site_icon')) }}" alt="" width="40" />
-                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'johirxofficial' }}</span>
+                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'minispro' }}</span>
                 @else
-                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'johirxofficial' }}</span>
+                    <span class="font-sans-serif text-success">{{ siteUrlSettings('site_name') ?? 'minispro' }}</span>
                 @endif
             @endif
         </div>

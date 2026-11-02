@@ -1,4 +1,4 @@
-# johirxofficial ISP Billing
+# minispro ISP Billing
 
 A complete, self-hosted ISP billing and network management platform for MikroTik-based ISPs.
 
@@ -79,7 +79,7 @@ You also need:
 ## What is in the ZIP
 
 ```
-johirxofficial-isp-billing/
+minispro/
 ├── app/                  Laravel application code
 ├── bootstrap/
 ├── config/
@@ -145,18 +145,18 @@ sudo mysql
 Run:
 
 ```sql
-CREATE DATABASE johirxofficial
+CREATE DATABASE minispro
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-CREATE USER 'johirxofficial'@'localhost'
+CREATE USER 'minispro'@'localhost'
   IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
 
-CREATE USER 'johirxofficial'@'127.0.0.1'
+CREATE USER 'minispro'@'127.0.0.1'
   IDENTIFIED BY 'CHANGE_THIS_PASSWORD';
 
-GRANT ALL PRIVILEGES ON johirxofficial.* TO 'johirxofficial'@'localhost';
-GRANT ALL PRIVILEGES ON johirxofficial.* TO 'johirxofficial'@'127.0.0.1';
+GRANT ALL PRIVILEGES ON minispro.* TO 'minispro'@'localhost';
+GRANT ALL PRIVILEGES ON minispro.* TO 'minispro'@'127.0.0.1';
 
 FLUSH PRIVILEGES;
 EXIT;
@@ -170,21 +170,20 @@ Upload the ZIP to the server, then:
 
 ```bash
 cd /var/www
-sudo unzip johirxofficial-isp-billing.zip
-sudo mv johirxofficial-isp-billing johirxofficial
-cd /var/www/johirxofficial
+sudo unzip minispro.zip
+cd /var/www/minispro
 ```
 
 Set ownership (adjust `www-data` if your web server uses another user):
 
 ```bash
-sudo chown -R www-data:www-data /var/www/johirxofficial
+sudo chown -R www-data:www-data /var/www/minispro
 ```
 
 ### 4. Install PHP dependencies
 
 ```bash
-cd /var/www/johirxofficial
+cd /var/www/minispro
 sudo -u www-data composer install --no-dev --optimize-autoloader
 ```
 
@@ -198,7 +197,7 @@ sudo mv composer.phar /usr/local/bin/composer
 ### 5. Configure `.env`
 
 ```bash
-cd /var/www/johirxofficial
+cd /var/www/minispro
 sudo -u www-data cp .env.example .env
 sudo -u www-data php artisan key:generate
 ```
@@ -212,7 +211,7 @@ sudo nano .env
 Minimum production settings:
 
 ```dotenv
-APP_NAME="johirxofficial"
+APP_NAME="minispro"
 APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://billing.example.com
@@ -221,16 +220,16 @@ APP_TIMEZONE=Asia/Dhaka
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=johirxofficial
-DB_USERNAME=johirxofficial
+DB_DATABASE=minispro
+DB_USERNAME=minispro
 DB_PASSWORD=CHANGE_THIS_PASSWORD
 
 SESSION_DRIVER=database
 SESSION_DOMAIN=
-SESSION_COOKIE=johirxofficial_session
+SESSION_COOKIE=minispro_session
 
 CACHE_STORE=file
-CACHE_PREFIX=johirxofficial_
+CACHE_PREFIX=minispro_
 QUEUE_CONNECTION=database
 
 FILESYSTEM_DISK=public
@@ -255,8 +254,8 @@ The bundled demo SQL contains the complete schema plus:
 Import it:
 
 ```bash
-cd /var/www/johirxofficial
-mysql -u johirxofficial -p johirxofficial < database/demo.sql
+cd /var/www/minispro
+mysql -u minispro -p minispro < database/demo.sql
 ```
 
 Enter the database password you created in step 2.
@@ -274,7 +273,7 @@ sudo -u www-data php artisan db:seed --class=SuperAdminSeeder --force
 ### 7. Storage link and permissions
 
 ```bash
-cd /var/www/johirxofficial
+cd /var/www/minispro
 sudo -u www-data php artisan storage:link
 sudo chown -R www-data:www-data storage bootstrap/cache
 sudo chmod -R 775 storage bootstrap/cache
@@ -285,7 +284,7 @@ sudo chmod -R 775 storage bootstrap/cache
 Before configuring Nginx, verify that the app works:
 
 ```bash
-cd /var/www/johirxofficial
+cd /var/www/minispro
 sudo -u www-data php artisan serve --host=0.0.0.0 --port=8000
 ```
 
@@ -294,13 +293,13 @@ Open `http://SERVER_IP:8000` — you should see the landing page and the
 
 ### 9. Production web server (Nginx)
 
-Create `/etc/nginx/sites-available/johirxofficial`:
+Create `/etc/nginx/sites-available/minispro`:
 
 ```nginx
 server {
     listen 80;
     server_name billing.example.com;
-    root /var/www/johirxofficial/public;
+    root /var/www/minispro/public;
 
     index index.php;
     charset utf-8;
@@ -335,7 +334,7 @@ server {
 Enable it and reload Nginx:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/johirxofficial /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/minispro /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -361,12 +360,12 @@ SMS, notifications and background jobs need a queue worker.
 sudo apt install -y supervisor
 ```
 
-Create `/etc/supervisor/conf.d/johirxofficial.conf`:
+Create `/etc/supervisor/conf.d/minispro.conf`:
 
 ```ini
-[program:johirxofficial-queue]
+[program:minispro-queue]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/johirxofficial/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+command=php /var/www/minispro/artisan queue:work --sleep=3 --tries=3 --max-time=3600
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -374,7 +373,7 @@ killasgroup=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/www/johirxofficial/storage/logs/queue.log
+stdout_logfile=/var/www/minispro/storage/logs/queue.log
 stopwaitsecs=3600
 ```
 
@@ -383,7 +382,7 @@ Reload Supervisor:
 ```bash
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl start johirxofficial-queue:*
+sudo supervisorctl start minispro-queue:*
 ```
 
 ### 11. Scheduler (cron)
@@ -397,13 +396,13 @@ sudo crontab -u www-data -e
 Add:
 
 ```cron
-* * * * * cd /var/www/johirxofficial && php artisan schedule:run >> /dev/null 2>&1
+* * * * * cd /var/www/minispro && php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ### Final optimisation
 
 ```bash
-cd /var/www/johirxofficial
+cd /var/www/minispro
 sudo -u www-data php artisan optimize:clear
 sudo -u www-data php artisan config:cache
 sudo -u www-data php artisan route:cache
@@ -422,8 +421,8 @@ https://billing.example.com/login
 
 | Role | Email | Password |
 |---|---|---|
-| Super Admin | `admin@johirxofficial.local` | `johirxofficial` |
-| Reseller | `reseller@johirxofficial.local` | `password` |
+| Super Admin | `admin@minispro.local` | `minispro` |
+| Reseller | `reseller@minispro.local` | `password` |
 
 > **Change both passwords immediately after your first login.**
 
@@ -541,14 +540,14 @@ forwarder webhook uses `MFS_SMS_TOKEN` from `.env` — change the default value.
 ### Database backup
 
 ```bash
-mysqldump -u johirxofficial -p --single-transaction johirxofficial \
+mysqldump -u minispro -p --single-transaction minispro \
   > backup-$(date +%F-%H%M).sql
 ```
 
 ### Database restore
 
 ```bash
-mysql -u johirxofficial -p johirxofficial < backup-2026-01-01-1200.sql
+mysql -u minispro -p minispro < backup-2026-01-01-1200.sql
 ```
 
 ### Files backup
@@ -556,8 +555,8 @@ mysql -u johirxofficial -p johirxofficial < backup-2026-01-01-1200.sql
 Back up:
 
 ```
-/var/www/johirxofficial/.env
-/var/www/johirxofficial/storage/app/public
+/var/www/minispro/.env
+/var/www/minispro/storage/app/public
 ```
 
 Keep `APP_KEY` safe. It is required to decrypt stored router and gateway
@@ -568,7 +567,7 @@ credentials.
 ## Updating the application
 
 ```bash
-cd /var/www/johirxofficial
+cd /var/www/minispro
 sudo -u www-data php artisan down
 sudo -u www-data composer install --no-dev --optimize-autoloader
 sudo -u www-data php artisan migrate --force

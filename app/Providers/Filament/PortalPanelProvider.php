@@ -35,7 +35,7 @@ class PortalPanelProvider extends PanelProvider
             ->path('portal')
             ->favicon(site_image(siteUrlSettings('site_favicon'), 'images/favicon.png'))
             ->brandLogo(site_image(siteUrlSettings('site_logo'), 'images/favicon.png'))
-            ->brandName(siteUrlSettings('site_name') ?? 'johirxofficial')
+            ->brandName(siteUrlSettings('site_name') ?? 'minispro')
             ->brandLogoHeight('3.5rem')
             ->login(Login::class)
             ->registration((siteUrlSettings('portal_registration_enabled') ?? 1) ? Register::class : null)

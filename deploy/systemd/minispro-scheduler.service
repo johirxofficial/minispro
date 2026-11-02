@@ -1,10 +1,10 @@
 [Unit]
-Description=johirxofficial scheduler
+Description=minispro scheduler
 After=network.target mysql.service
 
 [Service]
 Type=simple
-WorkingDirectory=/home/desktop/spacex/johirxofficial
+WorkingDirectory=/home/desktop/spacex/minispro
 ExecStart=/usr/bin/php artisan schedule:work
 Restart=always
 RestartSec=5

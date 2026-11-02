@@ -1,4 +1,4 @@
-{{-- Simple landing page for johirxofficial ISP Billing --}}
+{{-- Simple landing page for minispro ISP Billing --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 

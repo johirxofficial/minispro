@@ -1,4 +1,4 @@
-# johirxofficial — Own Project Guide
+# minispro — Own Project Guide
 
 This is an independent copy of the billing platform, rebranded for our own use.
 
@@ -14,14 +14,14 @@ database, sessions, cache, domain and service.
 | Admin login | **http://127.0.0.1:8001/login** |
 | Admin panel | **http://127.0.0.1:8001/dashboard** |
 | Customer portal | **http://127.0.0.1:8001/portal** |
-| Project folder | `/home/desktop/spacex/johirxofficial` |
-| Database | `johirxofficial` (MySQL) |
-| Web service | `johirxofficial.service` |
-| Queue worker | `johirxofficial-queue.service` |
-| Scheduler | `johirxofficial-scheduler.service` |
+| Project folder | `/home/desktop/spacex/minispro` |
+| Database | `minispro` (MySQL) |
+| Web service | `minispro.service` |
+| Queue worker | `minispro-queue.service` |
+| Scheduler | `minispro-scheduler.service` |
 | Server port | `8001` |
 
-Admin login: `admin@johirxofficial.local` / `johirxofficial`
+Admin login: `admin@minispro.local` / `minispro`
 
 > This project uses a **single-host layout** — no third-party domain or
 > subdomain is needed. Everything runs on `127.0.0.1:8001`:
@@ -33,13 +33,13 @@ Admin login: `admin@johirxofficial.local` / `johirxofficial`
 ## Everyday commands
 
 ```bash
-cd /home/desktop/spacex/johirxofficial
+cd /home/desktop/spacex/minispro
 
-systemctl --user status johirxofficial      # web
-systemctl --user status johirxofficial-queue
-systemctl --user status johirxofficial-scheduler
-systemctl --user restart johirxofficial     # restart after code changes
-systemctl --user stop johirxofficial        # stop
+systemctl --user status minispro      # web
+systemctl --user status minispro-queue
+systemctl --user status minispro-scheduler
+systemctl --user restart minispro     # restart after code changes
+systemctl --user stop minispro        # stop
 
 php artisan migrate                      # database changes
 php artisan optimize:clear               # clear config/route/view cache
@@ -49,37 +49,37 @@ php artisan test                         # tests (needs pdo_sqlite)
 
 ## Where to change the brand
 
-1. **App name** — `.env` → `APP_NAME="johirxofficial"`
+1. **App name** — `.env` → `APP_NAME="minispro"`
 2. **Site name / title** — Admin → Site Settings, or table `main_site_data`
    (`site_name`, `site_title`).
 3. **Logo** — `public/images/` (see `resources/views/filament/application-logo.blade.php`).
 4. **Colors / theme** — Admin → Site Settings (`theme_*` keys in `main_site_data`).
-5. **Frontend fallback text** — search for `johirxofficial` in `app/` and `resources/views/`.
+5. **Frontend fallback text** — search for `minispro` in `app/` and `resources/views/`.
 
 After changing `.env` run:
 
 ```bash
 php artisan optimize:clear
-systemctl --user restart johirxofficial
+systemctl --user restart minispro
 ```
 
 ## Database
 
 ```bash
 # Import the bundled demo database (schema + demo data)
-mysql -u johirxofficial -p johirxofficial < database/demo.sql
+mysql -u minispro -p minispro < database/demo.sql
 
 # Backup
-mysqldump -u johirxofficial -p --single-transaction johirxofficial > backup-$(date +%F).sql
+mysqldump -u minispro -p --single-transaction minispro > backup-$(date +%F).sql
 
 # Restore
-mysql -u johirxofficial -p johirxofficial < backup.sql
+mysql -u minispro -p minispro < backup.sql
 ```
 
 ## Separate from the original
 
 - `.git` is its own repository with no connection to the original project.
-- Own database: `johirxofficial`.
+- Own database: `minispro`.
 - Own session cookie, cache prefix and systemd services.
 - Runs on port `8001` while the original runs on `8000`.
 - Full server installation guide: [`README.md`](README.md).
